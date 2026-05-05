@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { deviceAPI } from '../services/apiService';
 import StatCard from './StatCard';
@@ -8,6 +8,7 @@ import '../styles/Dashboard.css';
 import { formatters, calculations } from '../utils/helpers';
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [devices, setDevices] = useState([]);
@@ -123,7 +124,7 @@ const Dashboard = () => {
                             <div className="empty-icon">📈</div>
                             <h3>No devices yet</h3>
                             <p>Add your first device to start monitoring</p>
-                            <Button variant="primary" onClick={() => window.location.href = '/devices'}>
+                            <Button variant="primary" onClick={() => navigate('/devices')}>
                                 Add Device
                             </Button>
                         </div>
@@ -133,16 +134,16 @@ const Dashboard = () => {
                 <div className="quick-actions">
                     <h2>Quick Actions</h2>
                     <div className="action-buttons">
-                        <Button variant="primary" className="action-btn" onClick={() => window.location.href = '/devices'}>
+                        <Button variant="primary" className="action-btn" onClick={() => navigate('/devices')}>
                             📱 Manage Devices
                         </Button>
-                        <Button variant="secondary" className="action-btn" onClick={() => window.location.href = '/consumption'}>
+                        <Button variant="secondary" className="action-btn" onClick={() => navigate('/consumption')}>
                             📊 View Usage
                         </Button>
-                        <Button variant="secondary" className="action-btn" onClick={() => window.location.href = '/alerts'}>
+                        <Button variant="secondary" className="action-btn" onClick={() => navigate('/alerts')}>
                             🔔 Check Alerts
                         </Button>
-                        <Button variant="secondary" className="action-btn" onClick={() => window.location.href = '/reports'}>
+                        <Button variant="secondary" className="action-btn" onClick={() => navigate('/reports')}>
                             📋 Generate Report
                         </Button>
                     </div>

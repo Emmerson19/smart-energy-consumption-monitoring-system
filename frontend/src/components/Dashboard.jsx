@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { deviceAPI } from '../services/apiService';
+import { deviceAPI, consumptionAPI } from '../services/apiService';
 import StatCard from './StatCard';
 import { Card, Button, Loading, ErrorMessage } from './UI';
 import '../styles/Dashboard.css';
@@ -14,6 +14,8 @@ const Dashboard = () => {
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [demoDataLoading, setDemoDataLoading] = useState(false);
+    const [demoSuccess, setDemoSuccess] = useState('');
 
     useEffect(() => {
         if (user?.userId) {
@@ -45,6 +47,47 @@ const Dashboard = () => {
         }
     };
 
+    const handleLoadDemoData = async () => {
+        setDemoDataLoading(true);
+        setError(null);
+        setDemoSuccess('');
+        try {
+            const response = await consumptionAPI.seedDemoData(user.userId);
+            setDemoSuccess(`Demo data loaded! ${response.records} consumption records and ${response.devices} devices added.`);
+            // Reload dashboard data
+            setTimeout(() => {
+                loadDashboardData();
+                setDemoSuccess('');
+            }, 2000);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to load demo data');
+        } finally {
+            setDemoDataLoading(false);
+        }
+    };
+
+    const handleClearDemoData = async () => {
+        if (!window.confirm('Are you sure you want to clear all demo data? This cannot be undone.')) {
+            return;
+        }
+        setDemoDataLoading(true);
+        setError(null);
+        setDemoSuccess('');
+        try {
+            await consumptionAPI.clearDemoData(user.userId);
+            setDemoSuccess('Demo data cleared successfully.');
+            // Reload dashboard data
+            setTimeout(() => {
+                loadDashboardData();
+                setDemoSuccess('');
+            }, 2000);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to clear demo data');
+        } finally {
+            setDemoDataLoading(false);
+        }
+    };
+
     if (loading) return <Loading />;
     if (error) return <ErrorMessage message={error} />;
 
@@ -64,6 +107,19 @@ const Dashboard = () => {
                     })}
                 </div>
             </div>
+            
+            {demoSuccess && (
+                <div style={{
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    backgroundColor: '#d4edda',
+                    color: '#155724',
+                    borderRadius: '4px',
+                    border: '1px solid #c3e6cb'
+                }}>
+                    ✓ {demoSuccess}
+                </div>
+            )}
             
             <div className="stats-grid">
                 <StatCard 
@@ -147,6 +203,33 @@ const Dashboard = () => {
                             📋 Generate Report
                         </Button>
                     </div>
+                </div>
+
+                <div className="demo-data-section">
+                    <Card>
+                        <h2>Demo Data</h2>
+                        <p style={{ marginBottom: '12px', color: '#666' }}>
+                            Load sample energy consumption records to see how the system works with real data.
+                        </p>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <Button 
+                                variant="primary" 
+                                onClick={handleLoadDemoData}
+                                disabled={demoDataLoading}
+                                style={{ flex: 1 }}
+                            >
+                                {demoDataLoading ? 'Loading...' : '➕ Load Demo Data'}
+                            </Button>
+                            <Button 
+                                variant="secondary" 
+                                onClick={handleClearDemoData}
+                                disabled={demoDataLoading}
+                                style={{ flex: 1 }}
+                            >
+                                {demoDataLoading ? 'Processing...' : '🗑️ Clear Demo Data'}
+                            </Button>
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>

@@ -19,4 +19,9 @@ router.get('/:userId/consumption/hourly', consumptionController.getHourlyConsump
 router.get('/:userId/consumption/trend', consumptionController.getConsumptionTrend);
 router.get('/:userId/devices/comparison', consumptionController.getDeviceComparison);
 
+// Demo data endpoints
+router.post('/:userId/demo-data/seed', consumptionController.seedDemoData);
+router.delete('/:userId/demo-data/clear', consumptionController.clearDemoData);
+
 export default router;
+

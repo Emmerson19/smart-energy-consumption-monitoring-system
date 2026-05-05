@@ -1,4 +1,5 @@
 import * as consumptionService from '../services/consumptionService.js';
+import * as demoDataService from '../services/demoDataService.js';
 import { successResponse, errorResponse, paginatedResponse } from '../utils/responseFormatter.js';
 
 export const recordConsumption = async (req, res) => {
@@ -180,6 +181,51 @@ export const getDeviceComparison = async (req, res) => {
         }
 
         return successResponse(res, 200, 'Device comparison retrieved', result.comparison);
+    } catch (error) {
+        return errorResponse(res, 500, 'Server error', error.message);
+    }
+};
+
+export const seedDemoData = async (req, res) => {
+    try {
+        // Verify user is accessing their own data or is admin
+        if (req.userId !== req.params.userId && req.userRole !== 'admin') {
+            return errorResponse(res, 403, 'Unauthorized access');
+        }
+
+        const result = await demoDataService.seedDemoConsumptionData(req.params.userId);
+
+        if (!result.success) {
+            return errorResponse(res, 400, result.error);
+        }
+
+        return successResponse(res, 201, 'Demo data seeded successfully', {
+            message: result.message,
+            devices: result.devices,
+            records: result.created
+        });
+    } catch (error) {
+        return errorResponse(res, 500, 'Server error', error.message);
+    }
+};
+
+export const clearDemoData = async (req, res) => {
+    try {
+        // Verify user is accessing their own data or is admin
+        if (req.userId !== req.params.userId && req.userRole !== 'admin') {
+            return errorResponse(res, 403, 'Unauthorized access');
+        }
+
+        const result = await demoDataService.clearDemoData(req.params.userId);
+
+        if (!result.success) {
+            return errorResponse(res, 400, result.error);
+        }
+
+        return successResponse(res, 200, 'Demo data cleared successfully', {
+            consumptionDeleted: result.consumptionDeleted,
+            devicesDeleted: result.devicesDeleted
+        });
     } catch (error) {
         return errorResponse(res, 500, 'Server error', error.message);
     }

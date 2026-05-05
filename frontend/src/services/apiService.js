@@ -74,7 +74,11 @@ export const consumptionAPI = {
     getTrend: (userId, days = 30) =>
         apiClient.get(`/consumption/${userId}/consumption/trend`, { params: { days } }),
     getComparison: (userId) =>
-        apiClient.get(`/consumption/${userId}/devices/comparison`)
+        apiClient.get(`/consumption/${userId}/devices/comparison`),
+    seedDemoData: (userId) =>
+        apiClient.post(`/consumption/${userId}/demo-data/seed`),
+    clearDemoData: (userId) =>
+        apiClient.delete(`/consumption/${userId}/demo-data/clear`)
 };
 
 // Alert API

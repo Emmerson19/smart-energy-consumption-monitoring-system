@@ -373,3 +373,28 @@
         grid-template-columns: 1fr;
     }
 }
+
+.demo-data-section {
+    margin-top: 2rem;
+}
+
+.demo-data-section h2 {
+    font-size: 1.25rem;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+}
+
+.demo-data-section p {
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.demo-data-section button {
+    transition: all 0.2s ease;
+}
+
+.demo-data-section button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { reportAPI } from '../services/apiService';
 import { Card, Button, Loading, ErrorMessage, SuccessMessage } from '../components/UI';
 import '../styles/Reports.css';
 import { formatters } from '../utils/helpers';
+import jsPDF from 'jspdf';
 
 const ReportsPage = () => {
     const { user } = useAuth();
@@ -16,6 +18,20 @@ const ReportsPage = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [energyRate, setEnergyRate] = useState(0);
     const [shareMenuOpen, setShareMenuOpen] = useState(false);
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const queryDate = params.get('date');
+        const queryReportType = params.get('reportType') || params.get('period');
+
+        if (queryDate) {
+            setSelectedDate(queryDate);
+        }
+        if (queryReportType) {
+            setReportType(queryReportType);
+        }
+    }, [location.search]);
 
     useEffect(() => {
         if (user?.userId) {
@@ -157,109 +173,51 @@ const ReportsPage = () => {
     const handleDownloadPDF = () => {
         if (!report) return;
 
-        // Create a print-friendly HTML page
-        const html = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>${getReportFilename()}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-                    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-                    h2 { color: #34495e; margin-top: 20px; }
-                    .summary { margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 5px; }
-                    .summary-item { margin: 10px 0; }
-                    .summary-item strong { color: #2c3e50; }
-                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                    th { background: #3498db; color: white; padding: 10px; text-align: left; }
-                    td { border: 1px solid #ddd; padding: 10px; }
-                    tr:nth-child(even) { background: #f9f9f9; }
-                    .footer { margin-top: 40px; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
-                    @media print { body { margin: 0; } }
-                </style>
-            </head>
-            <body>
-                <h1>${report.summary?.reportType || 'Energy Report'}</h1>
-                <p>Date: ${report.date || selectedDate}</p>
-                
-                <div class="summary">
-                    <h2>Summary</h2>
-                    <div class="summary-item">
-                        <strong>Total Consumption:</strong> ${formatters.formatEnergy(report.summary?.totalConsumption || 0)}
-                    </div>
-                    <div class="summary-item">
-                        <strong>Energy Rate:</strong> ₱${parseFloat(energyRate || 0).toFixed(2)} / kWh
-                    </div>
-                    <div class="summary-item">
-                        <strong>Total Cost:</strong> ${formatters.formatCurrency(getDisplayCost(), '₱')}
-                    </div>
-                    <div class="summary-item">
-                        <strong>Average Daily Consumption:</strong> ${formatters.formatEnergy(report.summary?.averageDailyConsumption || 0)}
-                    </div>
-                </div>
+        const doc = new jsPDF();
+        const lines = [];
+        lines.push(`${report.summary?.reportType || 'Energy Report'}`);
+        lines.push(`Date: ${report.date || selectedDate}`);
+        lines.push('');
+        lines.push(`Total Consumption: ${formatters.formatEnergy(report.summary?.totalConsumption || 0)}`);
+        lines.push(`Energy Rate: ₱${parseFloat(energyRate || 0).toFixed(2)} / kWh`);
+        lines.push(`Total Cost: ${formatters.formatCurrency(getDisplayCost(), '₱')}`);
+        lines.push(`Average Daily Consumption: ${formatters.formatEnergy(report.summary?.averageDailyConsumption || 0)}`);
+        lines.push('');
 
-                ${report.dailyBreakdown ? `
-                    <h2>Daily Breakdown</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Consumption (kWh)</th>
-                                <th>Cost (₱)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.entries(report.dailyBreakdown).map(([date, data]) => `
-                                <tr>
-                                    <td>${date}</td>
-                                    <td>${formatters.formatEnergy(data.consumption || 0)}</td>
-                                    <td>${formatters.formatCurrency(data.cost || 0, '₱')}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
+        if (report.dailyBreakdown) {
+            lines.push('Daily Breakdown:');
+            Object.entries(report.dailyBreakdown).forEach(([date, data]) => {
+                lines.push(`${date}: ${formatters.formatEnergy(data.consumption || 0)} kWh, ₱${data.cost || 0}`);
+            });
+            lines.push('');
+        }
 
-                ${report.monthlyBreakdown ? `
-                    <h2>Monthly Breakdown</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Consumption (kWh)</th>
-                                <th>Cost (₱)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.entries(report.monthlyBreakdown).map(([month, data]) => `
-                                <tr>
-                                    <td>${month}</td>
-                                    <td>${formatters.formatEnergy(data.consumption || 0)}</td>
-                                    <td>${formatters.formatCurrency(data.cost || 0, '₱')}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
+        if (report.monthlyBreakdown) {
+            lines.push('Monthly Breakdown:');
+            Object.entries(report.monthlyBreakdown).forEach(([month, data]) => {
+                lines.push(`${month}: ${formatters.formatEnergy(data.consumption || 0)} kWh, ₱${data.cost || 0}`);
+            });
+            lines.push('');
+        }
 
-                <div class="footer">
-                    <p>Generated on ${new Date().toLocaleString()}</p>
-                    <p>Smart Energy Consumption Monitoring System</p>
-                </div>
-            </body>
-            </html>
-        `;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        let y = 20;
+        doc.setFontSize(14);
+        doc.text(report.summary?.reportType || 'Energy Report', margin, y);
+        doc.setFontSize(10);
+        y += 10;
 
-        // Open in a new window and trigger print dialog
-        const printWindow = window.open('', '', 'width=800,height=600');
-        printWindow.document.write(html);
-        printWindow.document.close();
-        
-        // Wait for the document to render, then open print dialog
-        setTimeout(() => {
-            printWindow.print();
-            // Keep window open after printing so user can save as PDF
-        }, 250);
+        lines.forEach((line) => {
+            if (y > doc.internal.pageSize.getHeight() - 20) {
+                doc.addPage();
+                y = 20;
+            }
+            doc.text(line, margin, y);
+            y += 7;
+        });
+
+        doc.save(`${getReportFilename()}.pdf`);
     };
 
     const handleDownloadCSV = () => {

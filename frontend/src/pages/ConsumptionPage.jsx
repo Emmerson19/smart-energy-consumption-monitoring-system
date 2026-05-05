@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { consumptionAPI, reportAPI } from '../services/apiService';
+import { consumptionAPI } from '../services/apiService';
 import { Card, Button, Loading, ErrorMessage } from '../components/UI';
 import '../styles/Consumption.css';
 import { formatters } from '../utils/helpers';
@@ -18,7 +19,15 @@ const ConsumptionPage = () => {
         loadConsumptionData();
     }, [selectedPeriod, selectedDate]);
 
+    const navigate = useNavigate();
+
     const loadConsumptionData = async () => {
+        if (!user?.userId) {
+            setError('Please sign in to view consumption data.');
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         setError('');
         try {
@@ -55,8 +64,7 @@ const ConsumptionPage = () => {
     };
 
     const handleViewAnalytics = () => {
-        const reportUrl = `/reports?date=${selectedDate}&period=${selectedPeriod}`;
-        window.location.href = reportUrl;
+        navigate(`/reports?date=${selectedDate}&reportType=${selectedPeriod}`);
     };
 
     if (loading) return <Loading />;

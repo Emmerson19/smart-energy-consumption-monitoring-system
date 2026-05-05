@@ -16,6 +16,7 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [demoDataLoading, setDemoDataLoading] = useState(false);
     const [demoSuccess, setDemoSuccess] = useState('');
+    const [alerts, setAlerts] = useState([]);
 
     useEffect(() => {
         if (user?.userId) {
@@ -53,7 +54,14 @@ const Dashboard = () => {
         setDemoSuccess('');
         try {
             const response = await consumptionAPI.seedDemoData(user.userId);
-            setDemoSuccess(`Demo data loaded! ${response.records} consumption records and ${response.devices} devices added.`);
+            setDemoSuccess(`Demo data loaded! ${response.records} consumption records, ${response.devices} devices, and ${response.alerts} alerts created.`);
+            
+            // Fetch alerts
+            const alertsResponse = await consumptionAPI.getConsumptionWithAlerts(user.userId, 10, 1);
+            if (alertsResponse.alerts) {
+                setAlerts(alertsResponse.alerts);
+            }
+            
             // Reload dashboard data
             setTimeout(() => {
                 loadDashboardData();
@@ -118,6 +126,37 @@ const Dashboard = () => {
                     border: '1px solid #c3e6cb'
                 }}>
                     ✓ {demoSuccess}
+                </div>
+            )}
+
+            {alerts.length > 0 && (
+                <div className="alerts-section">
+                    <Card className="alerts-card">
+                        <h2>⚠️ Energy Alerts</h2>
+                        <div className="alerts-list">
+                            {alerts.map((alert, index) => (
+                                <div key={index} className="alert-item">
+                                    <div className="alert-icon">
+                                        {alert.severity === 'Critical' ? '🔴' : alert.severity === 'High' ? '🟠' : '🟡'}
+                                    </div>
+                                    <div className="alert-content">
+                                        <h4>{alert.title}</h4>
+                                        <p>{alert.description}</p>
+                                        <span className="alert-device">
+                                            Device: {alert.deviceId?.deviceName || 'Unknown'} ({alert.deviceId?.location || 'Unknown location'})
+                                        </span>
+                                        <div className="alert-meta">
+                                            <span className="alert-watts">💡 {alert.currentValue}W</span>
+                                            <span className="alert-threshold">Threshold: {alert.threshold}W</span>
+                                            <span className={`alert-severity alert-${alert.severity.toLowerCase()}`}>
+                                                {alert.severity}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
                 </div>
             )}
             

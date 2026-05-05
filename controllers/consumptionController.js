@@ -1,5 +1,6 @@
 import * as consumptionService from '../services/consumptionService.js';
 import * as demoDataService from '../services/demoDataService.js';
+import Alert from '../models/Alert.js';
 import { successResponse, errorResponse, paginatedResponse } from '../utils/responseFormatter.js';
 
 export const recordConsumption = async (req, res) => {
@@ -224,7 +225,40 @@ export const clearDemoData = async (req, res) => {
 
         return successResponse(res, 200, 'Demo data cleared successfully', {
             consumptionDeleted: result.consumptionDeleted,
-            devicesDeleted: result.devicesDeleted
+            devicesDeleted: result.devicesDeleted,
+            alertsDeleted: result.alertsDeleted
+        });
+    } catch (error) {
+        return errorResponse(res, 500, 'Server error', error.message);
+    }
+};
+
+export const getConsumptionWithAlerts = async (req, res) => {
+    try {
+        // Get recent consumption records
+        const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+        const page = parseInt(req.query.page) || 1;
+
+        const result = await consumptionService.getConsumptionByUser(
+            req.params.userId,
+            req.query.startDate,
+            req.query.endDate,
+            limit,
+            page
+        );
+
+        if (!result.success) {
+            return errorResponse(res, 400, result.error);
+        }
+
+        // Get high consumption alerts
+        const alerts = await demoDataService.getHighConsumptionAlerts(req.params.userId);
+
+        return successResponse(res, 200, 'Consumption data with alerts retrieved', {
+            consumption: result.consumptions,
+            pagination: result.pagination,
+            alerts: alerts,
+            alertCount: alerts.length
         });
     } catch (error) {
         return errorResponse(res, 500, 'Server error', error.message);

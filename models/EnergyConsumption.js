@@ -51,6 +51,16 @@ const energyConsumptionSchema = new mongoose.Schema({
         type: Number,
         description: 'Humidity percentage',
     },
+    powerWatts: {
+        type: Number,
+        description: 'Power consumption in watts',
+    },
+    status: {
+        type: String,
+        enum: ['normal', 'high', 'warning'],
+        default: 'normal',
+        description: 'Consumption status based on power threshold',
+    },
     notes: String,
     createdAt: {
         type: Date,

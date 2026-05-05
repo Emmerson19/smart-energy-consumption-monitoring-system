@@ -8,6 +8,7 @@ router.post('/:userId/devices/:deviceId/consumption', consumptionController.reco
 
 // Get consumption data
 router.get('/:userId/consumption', consumptionController.getUserConsumption);
+router.get('/:userId/consumption-with-alerts', consumptionController.getConsumptionWithAlerts);
 router.get('/:userId/devices/:deviceId/consumption', consumptionController.getDeviceConsumption);
 
 // Get consumption by period

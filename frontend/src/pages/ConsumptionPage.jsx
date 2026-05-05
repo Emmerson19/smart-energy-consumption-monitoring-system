@@ -129,13 +129,31 @@ const ConsumptionPage = () => {
                             <tr>
                                 <th>Date</th>
                                 <th>Consumption (kWh)</th>
+                                <th>Power (Watts)</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {trend.slice(0, 10).map((item, idx) => (
                                 <tr key={idx}>
-                                    <td>{formatters.formatDate(item.date)}</td>
+                                    <td>{formatters.formatDate(item.date || item.timestamp)}</td>
                                     <td>{formatters.formatEnergy(item.consumption)}</td>
+                                    <td>
+                                        {item.powerWatts ? (
+                                            <span className="power-watts">{item.powerWatts}W</span>
+                                        ) : (
+                                            '-'
+                                        )}
+                                    </td>
+                                    <td>
+                                        {item.status === 'high' ? (
+                                            <span className="status-badge status-high">⚠️ High</span>
+                                        ) : item.status === 'warning' ? (
+                                            <span className="status-badge status-warning">⏱️ Warning</span>
+                                        ) : (
+                                            <span className="status-badge status-normal">✓ Normal</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

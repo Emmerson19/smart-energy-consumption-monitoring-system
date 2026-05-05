@@ -61,6 +61,10 @@ export const consumptionAPI = {
         apiClient.get(`/consumption/${userId}/consumption`, {
             params: { startDate, endDate, limit, page }
         }),
+    getConsumptionWithAlerts: (userId, limit = 10, page = 1) =>
+        apiClient.get(`/consumption/${userId}/consumption-with-alerts`, {
+            params: { limit, page }
+        }),
     getDeviceConsumption: (userId, deviceId, startDate, endDate, limit = 100, page = 1) =>
         apiClient.get(`/consumption/${userId}/devices/${deviceId}/consumption`, {
             params: { startDate, endDate, limit, page }

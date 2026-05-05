@@ -3,7 +3,7 @@
 export const config = {
     // Database
     database: {
-        url: process.env.MONGO_URL || 'mongodb://localhost:27017/energy-monitoring',
+        url: process.env.MONGO_URL || process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/energy-monitoring',
         options: {
             // Mongoose 9+ uses modern default connection behavior.
         }

@@ -165,7 +165,7 @@ smart-energy-monitoring-system/
    # On Windows PowerShell:
    # copy .env.example .env
    ```
-   Edit `.env` and replace `MONGO_URL` with your MongoDB Atlas connection string:
+   Edit `.env` and replace `MONGO_URL` (or use `MONGODB_URI` / `DATABASE_URL` if your host requires it) with your MongoDB Atlas connection string:
    ```bash
    MONGO_URL=mongodb+srv://<username>:<password>@cluster0.mongodb.net/energy-monitoring?retryWrites=true&w=majority
    ```
@@ -484,5 +484,6 @@ For issues and questions, please create a GitHub issue or contact the developmen
 
 **Last Updated**: 2024
 **Maintainers**: Development Team
-#   s m a r t - e n e r g y - c o n s u m p t i o n - m o n i t o r i n g - s y s t e m  
+#   s m a r t - e n e r g y - c o n s u m p t i o n - m o n i t o r i n g - s y s t e m 
+ 
  

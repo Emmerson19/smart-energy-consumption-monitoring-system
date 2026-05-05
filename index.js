@@ -19,7 +19,7 @@ const app = express();
 dotenv.config();
 
 const PORT = process.env.PORT || config.server.port;
-const MONGOURL = process.env.MONGO_URL || config.database.url;
+const MONGOURL = process.env.MONGO_URL || process.env.MONGODB_URI || process.env.DATABASE_URL || config.database.url;
 
 // Middleware
 app.use(cors());

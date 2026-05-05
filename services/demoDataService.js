@@ -96,7 +96,7 @@ const generateDemoConsumptionData = (userId, deviceIds) => {
     });
 
     return demoData;
-
+};
 
 /**
  * Create sample devices for a user
